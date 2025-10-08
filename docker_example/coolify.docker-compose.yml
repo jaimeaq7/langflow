@@ -5,21 +5,38 @@ services:
     depends_on:
       - postgres
     environment:
+      - LANGFLOW_AUTO_LOGIN=false
+      - 'LANGFLOW_SECRET_KEY=${LANGFLOW_SECRET_KEY}'
+      - 'LANGFLOW_SUPERUSER=${LANGFLOW_SUPERUSER}'
+      - 'LANGFLOW_SUPERUSER_PASSWORD=${SERVICE_PASSWORD_SUPERUSER}'
       - SERVICE_URL_LANGFLOW_7860
-      - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
+      - LANGFLOW_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/langflow
       # This variable defines where the logs, file storage, monitor data and secret keys are stored.
       - LANGFLOW_CONFIG_DIR=/app/langflow
     volumes:
       - langflow-data:/app/langflow
+    healthcheck:
+      test: "bash -c ':> /dev/tcp/localhost/7860' || exit 1"
+      interval: 5s
+      timeout: 4s
+      retries: 10
+    restart: always
+      
 
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_USER: langflow
-      POSTGRES_PASSWORD: langflow
-      POSTGRES_DB: langflow
+      - 'POSTGRES_USER=${POSTGRES_USER:-langflow}'
+      - 'POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES:-langflow}'
+      - POSTGRES_DB=langflow
     volumes:
       - langflow-postgres:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: "pg_isready -U ${DB_USER} -d ${DB_NAME} || exit 1"
+      interval: 5s
+      timeout: 4s
+      retries: 10
 
 volumes:
   langflow-postgres:
