@@ -12,7 +12,7 @@ services:
       - SERVICE_URL_LANGFLOW_7860
       - LANGFLOW_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/langflow
       # This variable defines where the logs, file storage, monitor data and secret keys are stored.
-      - LANGFLOW_CONFIG_DIR=/app/langflow
+      - LANGFLOW_CONFIG_DIR=/var/lib/langflow
     volumes:
       - langflow-data:/app/langflow
     healthcheck:
